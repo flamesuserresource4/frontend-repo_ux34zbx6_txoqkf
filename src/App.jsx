@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import Header from './components/Header'
-import CarCard from './components/CarCard'
+import MotionCarCard from './components/MotionCarCard'
 import BookingForm from './components/BookingForm'
+import AnimatedBackground from './components/AnimatedBackground'
+import InsaneHero from './components/InsaneHero'
+import { AnimatePresence, motion } from 'framer-motion'
 
 function App() {
   const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
@@ -42,19 +45,42 @@ function App() {
   useEffect(() => { fetchCars() }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-slate-950 relative">
+      <AnimatedBackground />
       <Header onSeed={seed} seeding={seeding} seeded={seeded} />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <InsaneHero onSeed={seed} seeded={seeded} seeding={seeding} />
+
+      <main className="max-w-6xl mx-auto px-4 pb-16">
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-white">Vyberte si auto na krátkodobý prenájom</h2>
-          <p className="text-blue-200/80">Maximálne na 30 dní. Ihneď k dispozícii.</p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="text-2xl font-semibold text-white"
+          >
+            Vyberte si auto na krátkodobý prenájom
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="text-blue-200/80"
+          >
+            Maximálne na 30 dní. Ihneď k dispozícii.
+          </motion.p>
         </div>
 
         {error && (
-          <div className="text-red-400 bg-red-950/20 border border-red-400/20 p-4 rounded mb-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-red-400 bg-red-950/20 border border-red-400/20 p-4 rounded mb-6"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
         {loading ? (
@@ -68,22 +94,26 @@ function App() {
             Zatiaľ nemáme žiadne autá. Vložte ukážkové dáta pre rýchly štart.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {cars.map(car => (
-              <CarCard key={car.id} car={car} onSelect={setSelected} />
+              <MotionCarCard key={car.id} car={car} onSelect={setSelected} />
             ))}
-          </div>
+          </motion.div>
         )}
       </main>
 
-      {selected && (
-        <BookingForm
-          car={selected}
-          baseUrl={baseUrl}
-          onClose={() => setSelected(null)}
-          onBooked={(id) => { setBookedId(id); setSelected(null); alert('Rezervácia potvrdená!'); }}
-        />
-      )}
+      <AnimatePresence>
+        {selected && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <BookingForm
+              car={selected}
+              baseUrl={baseUrl}
+              onClose={() => setSelected(null)}
+              onBooked={(id) => { setBookedId(id); setSelected(null); alert('Rezervácia potvrdená!'); }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
